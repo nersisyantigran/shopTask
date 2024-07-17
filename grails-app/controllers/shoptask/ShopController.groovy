@@ -128,7 +128,7 @@ class ShopController {
     def selling() {
         def shopAccounting = ShopAccounting.get(params?.long("shopAccountingId"))
         if (shopAccounting) {
-            if (params.int("sellCount") && params.int("sellCount") > 0) {
+            if (params.int("sellCount") && params.int("sellCount") > 0 && params.int("sellCount") <= shopAccounting.count) {
                 shopAccounting.count -= params.int("sellCount")
                 try {
                     shopAccountingService.save(shopAccounting)
@@ -137,7 +137,10 @@ class ShopController {
                     respond shopAccounting.errors, view: 'sellProduct'
                     return
                 }
-            } else {
+            } else if (params.int("sellCount") > shopAccounting.count){
+                flash.error = "Sell Count can't be greater than ${shopAccounting.count}"
+                redirect(action: "sellProduct", id: shopAccounting?.id)
+            } else{
                 flash.error = "Sell Count must be a number greater than zero"
                 redirect(action: "sellProduct", id: shopAccounting?.id)
             }
