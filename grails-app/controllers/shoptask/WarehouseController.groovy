@@ -176,9 +176,15 @@ class WarehouseController {
             notFound()
             return
         }
-        Warehouse warehouse = WarehouseAccounting.get(id).warehouse
+        def warehouseAccounting = WarehouseAccounting.get(id)
+        def shopAccountings = ShopAccounting.findAllByProductAndWarehouse(warehouseAccounting?.product, warehouseAccounting?.warehouse)
+        if (shopAccountings?.size() > 0){
+            flash.error = "Cou can't delete because there are Shop Accountings where used this Warehouse Accounting"
+            redirect(action: "show", id: warehouseAccounting?.warehouse?.id)
+            return
+        }
         warehouseAccountingService.delete(id)
-        redirect(action: "show", id: warehouse?.id)
+        redirect(action: "show", id: warehouseAccounting?.warehouse?.id)
     }
 
     def deliverToShop(Long id) {

@@ -89,7 +89,7 @@ class ProductController {
             return
         } else if (price <= BigDecimal.ZERO){
             product.errors.reject("The price must be greater than 0")
-            respond product.errors, view: 'create'
+            respond product.errors, view: 'edit'
             return
         }
         try {

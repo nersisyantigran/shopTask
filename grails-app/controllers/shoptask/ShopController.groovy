@@ -154,6 +154,12 @@ class ShopController {
     def returnProduct() {
         def shopAccounting = ShopAccounting.get(params?.long("shopAccountingId"))
         if (shopAccounting) {
+            def warehouseAccounting = WarehouseAccounting.findByWarehouseAndProduct(shopAccounting?.warehouse, shopAccounting.product)
+            if (!warehouseAccounting){
+                flash.error = "Return Count must be a number greater than zero and not greater than ${shopAccounting?.count}"
+                redirect(action: "returnToWarehouse", id: shopAccounting?.shop?.id)
+                return
+            }
             if (!params?.int("returnCount") || params?.int("returnCount") > shopAccounting?.count || params?.int("returnCount") <= 0 ){
                 flash.error = "Return Count must be a number greater than zero and not greater than ${shopAccounting?.count}"
                 redirect(action: "returnToWarehouse", id: shopAccounting?.shop?.id)
@@ -162,7 +168,6 @@ class ShopController {
             shopAccounting.count -= params?.int("returnCount")
                 try {
                     shopAccountingService.save(shopAccounting)
-                    def warehouseAccounting = WarehouseAccounting.findByWarehouseAndProduct(shopAccounting?.warehouse, shopAccounting.product)
                     warehouseAccounting.count += params?.int("returnCount")
                     try {
                         warehouseAccountingService.save(warehouseAccounting)
